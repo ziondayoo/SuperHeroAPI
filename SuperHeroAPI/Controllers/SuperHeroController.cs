@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SuperHeroAPI.Models;
+using SuperHeroAPI.Services.SuperHeroService;
 
 namespace SuperHeroAPI.Controllers
 {
@@ -8,38 +8,51 @@ namespace SuperHeroAPI.Controllers
     [ApiController]
     public class SuperHeroController : ControllerBase
     {
+        private readonly ISuperHeroService _superHeroService;
 
-        private static List<SuperHero> superHeroes = new List<SuperHero>
+        public SuperHeroController(ISuperHeroService superHeroService)
         {
-                new SuperHero
-                {
-                    Id = 1,
-                    Name = "Spider Man",
-                    FirstName = "Peter",
-                    LastName = "Parker",
-                    Place = "New York City"
-                },
-                    new SuperHero
-                {
-                    Id = 2,
-                    Name = "Iron Man",
-                    FirstName = "Tony",
-                    LastName = "Stark",
-                    Place = "Malibu"
-                }
-        };
+            _superHeroService = superHeroService;
+        }
 
         [HttpGet]
         public async Task<ActionResult< List<SuperHero>>>GetAllHeroes()
         {
-            return Ok(superHeroes);
+            return _superHeroService.GetAllHeroes();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<List<SuperHero>>> GetSinglelHero(int id)
+        public async Task<ActionResult<SuperHero>> GetSinglelHero(int id)
         {
-            var hero = superHeroes.Find(x => x.Id == id);
-            return Ok(hero);
+            var result = _superHeroService.GetSingleHero(id);
+            if (result is null)
+                return NotFound("Hero not Found");
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<List<SuperHero>>> AddHero(SuperHero hero)
+        {
+            var result = _superHeroService.AddHero(hero);
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<List<SuperHero>>> UpdateHero(int id, SuperHero request)
+        {
+            var result = _superHeroService.UpdateHero(id, request);
+            if (result is null)
+                return NotFound("Hero not Found");
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<List<SuperHero>>> DeleteHero(int id)
+        {
+            var result = _superHeroService.DeleteHero(id);
+            if (result is null)
+                return NotFound("Hero not Found");
+            return Ok(result);
         }
     }
 }
